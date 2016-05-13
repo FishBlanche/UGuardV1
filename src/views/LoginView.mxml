@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" removedFromStage="remove_Handle()"      xmlns:mx1="library://ns.adobe.com/flex/halo" xmlns:mx="library://ns.adobe.com/flex/mx" addedToStage="addToStage()" creationComplete="init()"    actionBarVisible="false"  >
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:Image horizontalAlign="center" id="ctlImage"  x="0" y="0"  width="{this.width}" height="{this.height}" smooth="true" scaleMode="stretch" 
+				  source="@Embed(source='assets/e.jpg')"/> 
+	<s:VGroup height="70%" width="70%" horizontalAlign="center" horizontalCenter="0" verticalAlign="middle" verticalCenter="-25"  >
+		<s:Image smooth="true" scaleMode="letterbox" height="25%"  width="100%"  horizontalAlign="center" horizontalCenter="0"   source="@Embed('assets/art.png')"/>
+		<s:BorderContainer backgroundAlpha="0.25" borderAlpha="0" width="100%" height="30%">
+		
+		   <s:HGroup width="100%" height="100%"  >
+			  <mx:Image smoothBitmapContent="true" maintainAspectRatio="true"  height="90%" verticalCenter="0" verticalAlign="middle" id="up" source="@Embed('assets/man.png')"/>
+			 <s:TextInput returnKeyLabel="next" styleName="itextInput"  skinClass="spark.skins.mobile.TextInputSkin" verticalCenter="0" contentBackgroundAlpha="0"  id="username" color="black"  fontStyle="italic"   width="100%" height="100%"  prompt="用户名" fontSize="25"  >
+			</s:TextInput>
+		    </s:HGroup>
+		</s:BorderContainer>
+		<s:Spacer height="5%"/>
+		<s:BorderContainer backgroundAlpha="0.25" borderAlpha="0" width="100%" height="30%">
+		    <s:HGroup width="100%" height="100%">
+			  <mx:Image smoothBitmapContent="true" maintainAspectRatio="true"  height="90%"  verticalCenter="0" verticalAlign="middle" id="pd" source="@Embed('assets/key.png')"/>
+			  <s:TextInput styleName="itextInput" skinClass="spark.skins.mobile.TextInputSkin"   verticalCenter="0" contentBackgroundAlpha="0"  borderVisible="false" color="black" id="password"  displayAsPassword="true"    width="100%" height="100%"  prompt="密码" fontSize="25"   >
+			  </s:TextInput>
+		  </s:HGroup>
+		</s:BorderContainer>
+		<s:HGroup width="100%" height="20%" paddingRight="0">
+			<s:CheckBox fontSize="20" id="ck" label="记住密码" color="white"  height="100%" selected="true"  >
+			</s:CheckBox>
+			 <s:Button skinClass="components.MyButton" color="white"    width="100%" label="登陆" click="login_hander()" id="login"    height="100%"   fontSize="25"/>
+		</s:HGroup>
+		<s:Label   fontSize="30"  id="lmessage" color="#F00000"  />
+		<s:BusyIndicator   horizontalCenter="0"  id="busy" visible="{isBusy}" width="80" height="80"   symbolColor="#FFFFFF" >		
+		</s:BusyIndicator>
+	</s:VGroup>
+<fx:Style>
+		@namespace "library://ns.adobe.com/flex/spark";
+		.itextInput
+		{
+			skinClass:ClassReference("spark.skins.mobile.TextInputSkin");
+			showPromptWhenFocused: false;
+			borderVisible:false;
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import flash.filters.BitmapFilter;
+			import flash.filters.BlurFilter;
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import spark.components.View;
+			import spark.managers.PersistenceManager;
+			import spark.skins.mobile.TextInputSkin;
+			import spark.transitions.ZoomViewTransition;
+			import components.MyButton;
+			import model.SysUser;
+			import model.SysUserHelper;
+			import model.UrlInfo;
+			import model.newNodeInfo;
+			private var firstOne:Boolean=true;
+			private var isparaViewPushed:Boolean=false;
+			private var myAMF:AMFChannel=new AMFChannel();
+			private var channelSet:ChannelSet=new ChannelSet;
+			private var ro:RemoteObject = new RemoteObject();
+			private var ro1:RemoteObject = new RemoteObject();
+			private var ro2:RemoteObject = new RemoteObject;
+			private var ro3:RemoteObject = new RemoteObject;
+			private	var timer:Timer = new Timer(1000); 
+			private var loginSeconds:int=0;
+			private var test:Number;
+			[Bindable]
+			private var isBusy:Boolean=false;
+		    private  var userHelp:SysUserHelper  = new SysUserHelper;
+			private  var uinfo:SysUser = userHelp.getUserInfo();
+			private var zoomTrans:ZoomViewTransition=new ZoomViewTransition();
+			private function remove_Handle():void
+			{  
+				username.removeEventListener(FlexEvent.ENTER,usernameEnter);
+				password.removeEventListener(FlexEvent.ENTER,passwordEnter);
+				 
+				ro.removeEventListener(ResultEvent.RESULT,result_handler);
+				ro.removeEventListener(FaultEvent.FAULT,faultHandle);
+				 
+				ro1.removeEventListener(ResultEvent.RESULT,result1_handler);
+				ro1.removeEventListener(FaultEvent.FAULT,faultHandle);
+				 
+				ro2.removeEventListener(ResultEvent.RESULT,result2_handler);
+				ro2.removeEventListener(FaultEvent.FAULT,faultHandle);
+				ro3.removeEventListener(ResultEvent.RESULT,result3_handler);
+				ro3.removeEventListener(FaultEvent.FAULT,faultHandle);
+				if(timer)
+				{
+					timer.stop();
+					timer.removeEventListener(TimerEvent.TIMER, calTime);                       
+					 timer=null;
+				}
+				this.removeChildren();
+				this.removeAllElements();
+			}
+			private function addToStage():void 
+			{
+				firstOne=true;
+				FlexGlobals.topLevelApplication.count=0;
+	    	}
+			private function usernameEnter(event:FlexEvent):void
+			{  
+				stage.focus=null;
+			}
+			private function passwordEnter(event:FlexEvent):void
+			{  
+				stage.focus=null;
+				login_hander();
+			}
+			
+	        private function init():void{
+		    	login.enabled=true;
+			   login.setStyle("borderAlpha",0);
+			   username.addEventListener(FlexEvent.ENTER,usernameEnter,false,0,true);
+			   password.addEventListener(FlexEvent.ENTER,passwordEnter,false,0,true);
+				myAMF.url=UrlInfo.URL;
+				channelSet.addChannel(myAMF); 
+				ro.channelSet = channelSet;
+				ro.destination="UserService";
+				ro.addEventListener(ResultEvent.RESULT,result_handler,false,0,true);
+				ro.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				ro1.channelSet = channelSet;
+				ro1.destination="myDevice";
+				ro1.addEventListener(ResultEvent.RESULT,result1_handler,false,0,true);
+				ro1.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				ro2.channelSet = channelSet;
+				ro2.destination="FindRange";
+				ro2.addEventListener(ResultEvent.RESULT,result2_handler,false,0,true);
+				ro2.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				ro2.queryRange();
+			//数据持久化，将用户名和密码存储于设备中
+				var persistencemanager:PersistenceManager=new PersistenceManager();
+				if(persistencemanager.load())
+				{
+					if(persistencemanager.getProperty("iname"))
+					{
+						username.text=persistencemanager.getProperty("iname").toString();
+					}
+					if(persistencemanager.getProperty("ipword"))
+					{
+						password.text=persistencemanager.getProperty("ipword").toString();
+					}
+				}
+				BlurFilterHandle();
+			}
+			private function BlurFilterHandle():void {
+				//	draw();
+				var filter:BitmapFilter = getBitmapFilter();
+				var myFilters:Array = new Array;
+				myFilters.push(filter);
+				ctlImage.filters=myFilters;
+			}
+			private function getBitmapFilter():BitmapFilter {
+				var blurX:Number = 6.5;
+				var blurY:Number = 3.5;
+				return new BlurFilter(blurX, blurY, 3);
+			}
+		   private  function login_hander():void{
+		     	//trace("login_hander()");
+				lmessage.text="";
+				if(username.text==""&&password.text=="")
+				{
+					lmessage.text="请填写用户名与密码！";
+				}
+				else	if(username.text=="")
+				{
+					lmessage.text="请填写用户名！";
+				}
+				else	if(password.text=="")
+				{
+					lmessage.text="请填写密码！";
+				}
+				else
+				{
+					ro.queryUser(username.text,password.text);
+					isBusy=true;
+					login.enabled=false;
+					timer.addEventListener(TimerEvent.TIMER, calTime,false,0,true);                       
+					timer.start();   
+				}
+			}
+			private function calTime(event:TimerEvent):void {      
+				loginSeconds++;
+				if(loginSeconds>=10)
+				{
+					isBusy=false;
+					lmessage.text="登录超时,请重试";
+					loginSeconds=0;
+					login.enabled=true;
+					timer.stop();
+				}
+			}
+			private  function result3_handler(event:ResultEvent):void{
+				FlexGlobals.topLevelApplication.wpCollect.removeAll();
+				FlexGlobals.topLevelApplication.wpCollect=event.result as ArrayCollection; 
+			}
+			private  function result2_handler(event:ResultEvent):void{
+				FlexGlobals.topLevelApplication.rangeCollect.removeAll();
+				FlexGlobals.topLevelApplication.rangeCollect=event.result as ArrayCollection; 
+				for(var e:Object in event.result ){
+					trace("所有范围"+event.result[e].chineseName+","+event.result[e].unit+","+event.result[e].min_number+","+event.result[e].max_number);
+				}
+	      }
+			private  function result1_handler(event:ResultEvent):void{
+				trace("result1_handler");
+			FlexGlobals.topLevelApplication.nodes.removeAll();
+				for(var e:Object in event.result ){
+				    var tmpnodes:ArrayCollection  = new ArrayCollection;  //第一层树结点数据
+					tmpnodes=event.result[e].nodes;
+					for(var i:int=0;i<tmpnodes.length;i++)
+					{
+						var nodelot:newNodeInfo = new newNodeInfo;
+						nodelot.node_ID=String(tmpnodes.getItemAt(i).node_id);
+						nodelot.sensingTypes=tmpnodes.getItemAt(i).sensingTypes;
+						nodelot.englishNames=tmpnodes.getItemAt(i).englishNames;
+						FlexGlobals.topLevelApplication.nodes.addItem(nodelot);
+			        	if(firstOne)
+						{ 
+							FlexGlobals.topLevelApplication.curNode=nodelot;
+							FlexGlobals.topLevelApplication.nodeID=nodelot.node_ID;
+							trace("第一个节点"+FlexGlobals.topLevelApplication.nodeID+","+FlexGlobals.topLevelApplication.curNode.sensingTypes);
+							FlexGlobals.topLevelApplication.preNodeID=nodelot.node_ID;
+							firstOne=false;
+					    }
+				}
+			}
+				isBusy=false;
+				timer.stop();
+				if(!isparaViewPushed)
+				{
+					navigator.pushView(views.paraView);
+					isparaViewPushed=true;     
+				}
+			}
+		private  function result_handler(e:ResultEvent):void{
+			if(e.result)
+				{
+					uinfo.setUserId(e.result.userId);
+					uinfo.setUserName(e.result.userName);
+					uinfo.setPassword(e.result.password);
+					uinfo.setRoleId(e.result.roleId);
+					uinfo.setStatus(e.result.status);
+					uinfo.setTrueName(e.result.trueName);
+					uinfo.setGender(e.result.gender);
+					uinfo.setPhone(e.result.phone);
+					uinfo.email=e.result.email;
+					uinfo.sina_weibo=e.result.sina_weibo;
+				     uinfo.setAddress(e.result.address);
+					 uinfo.setCreateDate(e.result.createDate);
+					 uinfo.setUserDataTable(e.result.userDataTable);
+					 uinfo.setRoleName(e.result.roleName);
+                     ro3.channelSet = channelSet;
+					 ro3.destination="findWarning";
+					 ro3.addEventListener(ResultEvent.RESULT,result3_handler,false,0,true);
+					 ro3.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+					 ro3.queryWarning(uinfo);
+					var persistencemanager:PersistenceManager=new PersistenceManager();
+					if(persistencemanager.load())
+					{
+					    persistencemanager.setProperty("iname",username.text);
+						FlexGlobals.topLevelApplication.myName=username.text;
+					    if(ck.selected)
+					    {
+						    persistencemanager.setProperty("ipword",password.text);
+						}
+						else
+						{
+							persistencemanager.setProperty("ipword",null);
+						}
+						if(uinfo.email)
+						{
+							persistencemanager.setProperty("iemail",uinfo.email);
+						}
+						else
+						{
+							persistencemanager.setProperty("iemail",null);
+						}
+						if(uinfo.sina_weibo)
+						{
+							persistencemanager.setProperty("iweibo",uinfo.sina_weibo);
+						}
+						else
+						{
+							persistencemanager.setProperty("iweibo",null);
+						}
+						persistencemanager.save();
+						lmessage.text="";
+					}
+					trace("ro1++++++"+FlexGlobals.topLevelApplication.myName+","+e.result.userId);
+		                ro1.queryDevice(FlexGlobals.topLevelApplication.myName,e.result.userId);
+					}
+				else
+				{
+					lmessage.text="登录错误";
+					username.text="";
+					password.text="";
+				}
+			}
+			private  function  faultHandle(event:FaultEvent):void
+			{ 
+			 	trace(" request error");
+			 	trace(event.fault.faultString);
+			 	trace(event.fault.faultDetail);
+			}
+		]]>
+	</fx:Script>
+</s:View>

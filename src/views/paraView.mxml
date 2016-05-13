@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"  
+		xmlns:s="library://ns.adobe.com/flex/spark"   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:comps="components.*"   removedFromStage="remove_Handle()" viewActivate="viewActivate_Handle()" initialize="init()" creationComplete="create()"      >
+	
+<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+       <mx:SeriesSlide  id="slide" direction="right"   />
+		<mx:SolidColorStroke id="chartStroke" color="white" weight="1"/>
+		<mx:SolidColor id="sc1" color="#ffe600" alpha=".8"/>
+	    <mx:SolidColorStroke id="s1" color="#ffe600" weight="2"/>
+		<mx:SolidColorStroke id = "s2" color="#f47920" weight="0.6"/>
+		<mx:SolidColor id="sc2" color="#ffc20e" alpha=".3"/>
+		<mx:SolidColor id="sc3" color="#009ad6" alpha=".8"/>
+		<mx:SolidColorStroke id="s3" color="#009ad6" weight="2"/>
+		<mx:SolidColor id="sc4" color="#cde6c7" alpha=".8"/>
+		<mx:SolidColorStroke id="s4" color="green" weight="2"/>
+		<mx:SolidColorStroke id="s5" color="green" weight="3"/>
+		<mx:SolidColor id="circleFill" color="#f47920" alpha="1"/>
+	
+	<mx:WipeLeft id="wipeIn" duration="1000"/>
+</fx:Declarations>
+<s:states>
+		<s:State name="default"/>
+		<s:State name="nodefault"/>
+</s:states>
+	
+<s:Image  smooth="true" scaleMode="stretch"   horizontalAlign="center" horizontalCenter="0" id="ctlImage"  x="0" y="0"  width="{this.width}" height="{this.height}"  
+				source="@Embed(source='assets/m.png')"/>
+<s:HGroup id="hg" width="{this.width}" height="{this.height}" horizontalAlign="center" horizontalCenter="0" verticalAlign="middle">
+    <s:VGroup includeInLayout="true"  visible="true"     id="vg" width="95%" height="100%" horizontalAlign="center" horizontalCenter="0" verticalAlign="middle">
+			<s:HGroup width="100%" height="5%">
+				<s:Label   fontSize="20" verticalAlign="middle"  color="white"  text="{curNodeID}号节点"  backgroundAlpha="0.1" width="100%" height="100%"/>
+				
+				<s:Image  alpha="1"   horizontalAlign="right" verticalAlign="middle"  height="90%"    id="qImage" smooth="true" scaleMode="letterbox"    
+							source="{icon_qiehuan}"   click="show_List()"/>
+			 
+				<s:Spacer width="3%"/>
+				<s:Image  alpha="1"   horizontalAlign="right" verticalAlign="middle" height="90%"     id="aImage"  smooth="true" scaleMode="letterbox"  
+							source="{icon_alarm}"   click="show_Warn()"/>
+				 
+		   </s:HGroup>
+			<s:BorderContainer    width="100%" height="15%"  horizontalCenter="0"  borderAlpha="0.1" backgroundAlpha="0.1"  cornerRadius="9">
+				<s:layout>
+					<s:HorizontalLayout  verticalAlign="middle"  horizontalAlign="center"/>
+				</s:layout>
+				 <s:VGroup verticalAlign="middle" width="35%" height="100%">
+							<s:Label verticalAlign="middle"  textAlign="center"  text="{FlexGlobals.topLevelApplication.idate}" fontSize="23" width="100%" height="33%" color="white">
+								<s:filters>
+									<s:DropShadowFilter distance="10" angle="45"/>
+								</s:filters>
+							</s:Label>
+							<s:Label verticalAlign="middle"  textAlign="center"  text="{FlexGlobals.topLevelApplication.iweekDay}" fontSize="23" width="100%" height="33%" color="white">
+								<s:filters>
+									<s:DropShadowFilter distance="10" angle="45"/>
+								</s:filters>
+							</s:Label>
+							<s:Label verticalAlign="middle"  textAlign="center"  text="{curTime}" fontSize="23" width="100%" height="33%" color="white">
+								<s:filters>
+									<s:DropShadowFilter distance="10" angle="45"/>
+								</s:filters>
+							</s:Label>
+						</s:VGroup>
+						<s:Image width="13%" height="100%" smooth="true" scaleMode="letterbox"   horizontalAlign="center" verticalAlign="middle"   id="iImage"/>
+								<s:VGroup verticalAlign="middle" width="40%" height="100%" paddingRight="5">
+								<s:Label     verticalAlign="middle"   textAlign="left" text="{curdata}" fontSize="45" width="100%" height="55%" color="white">
+									<s:filters>
+										<s:DropShadowFilter distance="10" angle="45"/>
+									</s:filters>
+								</s:Label>
+								<s:Label       textAlign="center"        height="45%"  text="{curparaUnit}" fontSize="36" width="90%"  color="white">
+									<s:filters>
+										<s:DropShadowFilter distance="10" angle="45"/>
+									</s:filters>
+								</s:Label>
+							</s:VGroup>
+					</s:BorderContainer>
+			<s:BorderContainer  id="bc"  width="100%" height="30%" horizontalCenter="0"  borderAlpha="0.1" backgroundAlpha="0.1"  cornerRadius="3">
+				<s:layout>
+							<s:VerticalLayout  verticalAlign="middle" horizontalAlign="center"/>
+						</s:layout>
+						<mx:HSlider thumbSkin="@Embed(source='assets/slider.png')"   itemCreationPolicy="immediate" includeIn="nodefault"    horizontalCenter="0"  verticalCenter="0"     height="40%"      width="100%"    id="hSlider"  
+									 minimum="{min}" maximum="{max}"      
+									 dataTipPlacement="top"  mouseEnabled="false"    
+									 tickColor="white" labelStyleName="iHSlider" 
+									 snapInterval="0.01"   
+									 allowTrackClick="false" 
+									 liveDragging="false"
+									 />
+						<s:Spacer height="3%"/>
+						<s:Label  id="advice" text="{adviceTip}"    textAlign="left"  fontSize="17" width="100%" height="60%" color="white">
+						</s:Label>
+				</s:BorderContainer>
+				<s:BorderContainer  width="100%" height="50%" horizontalCenter="0"  borderAlpha="0.1" backgroundAlpha="0.1"  cornerRadius="3">
+					<s:layout>
+							<s:VerticalLayout verticalAlign="middle" horizontalAlign="center"/>
+						</s:layout>
+					  <s:Label  verticalAlign="middle" fontSize="17" paddingTop="2" paddingLeft="3" text="最近一天内{curpara}变化&amp;&amp;最近一周{curpara}统计值" color="white" backgroundAlpha="0.4" width="100%" height="10%"/>
+			          <mx:ColumnChart   color="white" fontSize="18" id="column" 	height="90%" width="100%" 	paddingLeft="5" paddingRight="5" 	showDataTips="true"  >        
+						    <mx:horizontalAxis>
+							  <mx:CategoryAxis displayName="时间"      id="ca1" categoryField="paraTime"/>
+						  </mx:horizontalAxis>
+							<mx:verticalAxis>
+								<mx:LinearAxis  baseAtZero="true" id="la"/>
+							</mx:verticalAxis>
+						  	<mx:series>
+								<mx:ColumnSeries   xField="paraTime" yField="paraMaxValue" displayName="{curpara}最大值" fill="{sc1}" stroke="{s1}"/>
+							    <mx:ColumnSeries      xField="paraTime"  yField="paraMinValue" displayName="{curpara}最小值"  fill="{sc3}" stroke="{s3}" />
+								<mx:ColumnSeries    xField="paraTime"  yField="paraAvgValue"  displayName="{curpara}平均值" fill="{sc4}" stroke="{s4}"/>
+								<mx:LineSeries  id="ls"  itemRenderer="	mx.charts.renderers.CircleItemRenderer"  fill="{circleFill}"    filters="[]" radius="2"    xField="paraTime" yField="paraValue" displayName="{curpara}"  lineStroke="{s2}">
+									<mx:horizontalAxis>
+										<mx:CategoryAxis  displayName="时间"    id="ca" categoryField="paraTime"/>
+									</mx:horizontalAxis>
+								</mx:LineSeries>
+							 </mx:series>
+							<mx:horizontalAxisRenderers>
+								<mx:AxisRenderer placement="bottom"  canDropLabels="true"  axis="{ca}"  axisStroke="{chartStroke}"  tickStroke="{chartStroke}"/>
+								<mx:AxisRenderer placement="top"    axis="{ca1}"  axisStroke="{chartStroke}"  tickStroke="{chartStroke}"/>
+							</mx:horizontalAxisRenderers>
+							<mx:verticalAxisRenderers>
+								<mx:AxisRenderer placement="left"  axis="{la}"  axisStroke="{chartStroke}"  tickStroke="{chartStroke}"/>
+							</mx:verticalAxisRenderers>
+						</mx:ColumnChart>
+						<mx:Legend     direction="horizontal" color="white"   dataProvider="{column}"/>
+					 </s:BorderContainer>
+		</s:VGroup>	
+	<comps:ListContainer   id="lc" includeInLayout="false" visible="false"   height="100%"/>
+	<comps:WarnContainer   id="wc" includeInLayout="false" visible="false" height="100%"/>
+</s:HGroup>
+	 
+<fx:Style>
+		@namespace "library://ns.adobe.com/flex/spark";
+	    
+		.iHSlider
+		{
+			color:white;
+			fontSize: 15;
+			width:300; 
+			backgroundColor:#130c0e;
+		}
+		.TipStyle
+		{
+			fontSize: 13;
+			borderColor: #50b7c1;
+			textAlign:center;
+			backgroundAlpha:0.3;
+			color: white;
+			fontWeight: bold;
+		}
+	    .labStyle
+		{
+			fontSize: 100;
+			textAlign:center;
+			color: white;
+			backgroundColor:black;
+			backgroundAlpha:0.5;
+			verticalAlign:middle;
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			//showDataEffect="{slide}"////removedFromStage="remove_Handle()" viewActivate="viewActivate_Handle()" initialize="init()" creationComplete="create()" 
+			import flash.filters.BitmapFilter;
+			import flash.filters.BlurFilter;
+			import flash.filters.ColorMatrixFilter;
+			
+			import mx.charts.renderers.CircleItemRenderer;
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.effects.Glow;
+			import mx.formatters.DateFormatter;
+			import mx.formatters.NumberFormatter;
+			import mx.managers.CursorManager;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.transitions.SlideViewTransition;
+			
+			import components.CO2TrackSkin;
+			import components.COTrackSkin;
+			import components.DataPump;
+			import components.DustTrackSkin;
+			import components.HumTrackSkin;
+			import components.LightTrackSkin;
+			import components.ListContainer;
+			import components.SO2TrackSkin;
+			import components.TempTrackSkin;
+			import components.WarnContainer;
+			
+			import model.ParaInfo;
+			import model.StatisticParaInfo;
+			import model.SysUser;
+			import model.SysUserHelper;
+			import model.UrlInfo;
+        	private var myAMF:AMFChannel=new AMFChannel;
+			private var channelSet:ChannelSet=new ChannelSet;
+			private var ro:RemoteObject = new RemoteObject;
+			private var ro1:RemoteObject = new RemoteObject;
+			private	var listC:ListContainer;
+			private	var warnC:WarnContainer;
+	        private var datap:DataPump;
+			private  var userHelp:SysUserHelper  = new SysUserHelper;
+			private  var uinfo:SysUser = userHelp.getUserInfo();
+            private	 var paraInfo:ArrayCollection  = new ArrayCollection;  //第一层树结点数据
+			private	 var weekInfo:ArrayCollection  =new ArrayCollection;  //第一层树结点数据
+			private	var eBeginX:Number;
+			private	var eBeginY:Number;
+	        private	 var paraTotalCount:int=0;
+			private	var curparaEN:String="";
+			var timer:Timer = new Timer(1000);   
+		     [Bindable]
+			private	 var curTime:String="";
+			[Bindable]
+			private	 var adviceTip:String="";
+			[Bindable]
+			private	 var curpara:String="";
+			[Bindable]
+			private	 var curdata:String="";
+			[Bindable]
+			private	 var curNodeID:String="";
+			[Bindable]
+			private	 var curparaUnit:String="";
+			[Bindable]
+			private	var min:Number=0;
+			[Bindable]
+			private	var max:Number=100; 
+			
+			
+			[Bindable] [Embed (source="assets/qiehuan.png")] private static var icon_qiehuan:Class;
+			[Bindable] [Embed (source="assets/alarm_on_48.png")] private static var icon_alarm:Class;
+			[Bindable] [Embed (source="assets/mytemp.png")] private static var icon_temp:Class;
+			[Bindable] [Embed (source="assets/myhume.png")] private static var icon_hume:Class;
+			//[Bindable] [Embed (source="assets/co2.png")] private static var icon_CO2:Class;
+			[Bindable] [Embed (source="assets/mylight.png")] private static var icon_light:Class;
+			[Bindable] [Embed (source="assets/mySO2.png")] private static var icon_SO2:Class;
+			[Bindable] [Embed (source="assets/myCO2.png")] private static var icon_CO2:Class;
+			[Bindable] [Embed (source="assets/myCO.png")] private static var icon_CO:Class;
+			[Bindable] [Embed (source="assets/mydust.png")] private static var icon_dust:Class;
+			[Bindable] [Embed (source="assets/jiaquan.png")] private static var icon_jiaquan:Class;
+		//	[Bindable] [Embed (source="assets/slider.png")] private static var icon_slider:Class;
+		    private	var slideTrans:SlideViewTransition=new SlideViewTransition;
+			private	var lab_tip:Label;
+			private	var temp:Number;
+			private function remove_Handle():void
+			{ 
+				CursorManager.removeBusyCursor(); 
+				ro.removeEventListener(ResultEvent.RESULT,result_handler,false);
+				ro.removeEventListener(FaultEvent.FAULT,faultHandle,false);
+				ro1.removeEventListener(ResultEvent.RESULT,result1_handler,false);
+				ro1.removeEventListener(FaultEvent.FAULT,faultHandle,false);
+				
+				paraInfo.removeAll();
+				paraInfo=null;
+				weekInfo.removeAll();
+				weekInfo=null;
+			//	stage.removeEventListener(Event.RESIZE,onOrientationChange);
+				timer.stop();
+				timer.removeEventListener(TimerEvent.TIMER, resetNow);                       
+				timer=null;
+				curdata=null;
+				if(datap)
+				{
+					datap.newestSensing.removeAll();
+					datap.consumer.unsubscribe();
+					datap.removeEventListener("_newSensingData",newData,false);
+					datap=null;
+					
+				}
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+				
+				this.removeChildren();
+				this.removeAllElements();
+				//this=null;
+			} 
+			/*
+			private	 function onOrientationChange(event:Event):void {
+				hSlider.validateNow();
+				hSlider.invalidateDisplayList();
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+				this.width=stage.stageWidth;
+				this.x=stage.x;
+				temp=this.width;
+				vg.width=this.width*0.95;
+			if(lc.visible)
+			{
+				lc.includeInLayout=false;
+				lc.visible=false;
+				if(temp>=900)
+				{
+					this.width=this.width+this.width*0.3;
+					vg.width=this.width/1.3;
+					lc.width=this.width*0.3/1.3;
+					this.x=this.x-temp*0.3;
+					vg.x=vg.x-temp*0.3;
+					lc.x=vg.x+vg.width;
+				}
+				else if(temp>=700&&temp<900)
+				{
+					this.width=this.width+this.width*0.5;
+					vg.width=this.width/1.5;
+					lc.width=this.width*0.5/1.5;
+					this.x=this.x-temp*0.5;
+					vg.x=vg.x-temp*0.5;
+					lc.x=vg.x+vg.width;
+				}
+				else
+				{
+					this.width=this.width+this.width*0.8;
+					vg.width=this.width/1.8;
+					lc.width=this.width*0.8/1.8;
+					this.x=this.x-temp*0.8;
+					vg.x=vg.x-temp*0.8;
+					lc.x=vg.x+vg.width;
+				}
+				lc.includeInLayout=true;
+				lc.visible=true;
+			}
+			 
+			if(wc.visible)
+			{
+				wc.includeInLayout=false;
+				wc.visible=false;
+				if(temp>=900)
+				{
+					this.width=this.width+this.width*0.3;
+					vg.width=this.width/1.3;
+					wc.width=this.width*0.3/1.3;
+					this.x=this.x-temp*0.3;
+					vg.x=vg.x-temp*0.3;
+					wc.x=vg.x+vg.width;
+				}
+				else if(temp>=700&&temp<900)
+				{
+					this.width=this.width+this.width*0.5;
+					vg.width=this.width/1.5;
+					wc.width=this.width*0.5/1.5;
+					this.x=this.x-temp*0.5;
+					vg.x=vg.x-temp*0.5;
+					wc.x=vg.x+vg.width;
+				}
+				else
+				{
+					this.width=this.width+this.width*0.8;
+					vg.width=this.width/1.8;
+					wc.width=this.width*0.8/1.8;
+					this.x=this.x-temp*0.8;
+					vg.x=vg.x-temp*0.8;
+					wc.x=vg.x+vg.width;
+				}
+				wc.includeInLayout=true;
+				wc.visible=true;
+				
+				
+			}
+				
+				
+		 }*/
+			 
+			private function viewActivate_Handle():void
+			{
+			
+			}
+			private function init():void
+			{
+				 	
+			 	CursorManager.setBusyCursor();
+			 	setTimeout(function():void {data_show();},1000); 
+			    this.actionBarVisible=false;
+				
+		//		BlurFilterHandle();//滤镜模糊
+			}
+		 
+		 
+			private function create():void
+			{
+				trace("create()"+this.width);
+				temp=this.width;
+			
+			}
+			
+			private function data_show():void
+			{
+			//	stage.addEventListener(Event.RESIZE,onOrientationChange);
+			 if(FlexGlobals.topLevelApplication.curNode)
+			 {
+				 Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+				 vg.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchBegin,false,0,true);
+				 vg.addEventListener(TouchEvent.TOUCH_MOVE, onTouchMove,false,0,true);
+				 this.addEventListener(KeyboardEvent.KEY_UP,function(e:KeyboardEvent):void{ 
+					 if(e.keyCode == Keyboard.BACK){ 
+						 e.preventDefault();
+						 e.stopPropagation(); 
+					 } 
+				 },false,0,true);
+				 myAMF.url=UrlInfo.URL;
+				 channelSet.addChannel(myAMF); 
+				 ro.channelSet = channelSet;
+				 ro.destination="findHistoryData";
+				 ro.addEventListener(ResultEvent.RESULT,result_handler,false,0,true);
+				 ro.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				 ro1.channelSet = channelSet;
+				 ro1.destination="findWeekData";
+				 ro1.addEventListener(ResultEvent.RESULT,result1_handler,false,0,true);
+				 ro1.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				 
+				 timer.addEventListener(TimerEvent.TIMER, resetNow,false,0,true);                       
+				 timer.start();    
+				 
+				 curNodeID=FlexGlobals.topLevelApplication.curNode.node_ID;
+				 var strST:Array=FlexGlobals.topLevelApplication.curNode.sensingTypes.split(",");
+				 curpara=strST[FlexGlobals.topLevelApplication.count%strST.length];
+				 var strEN:Array=FlexGlobals.topLevelApplication.curNode.englishNames.split(",");
+				 curparaEN=strEN[FlexGlobals.topLevelApplication.count%strEN.length];
+				 paraTotalCount=strEN.length;
+				 ro.findHistoryByPara(FlexGlobals.topLevelApplication.myName,curparaEN,FlexGlobals.topLevelApplication.curNode.node_ID,null,null);
+				 var rclen:int=FlexGlobals.topLevelApplication.rangeCollect.length;
+				 for(var i:int=0;i<rclen;i++)
+				 {
+					 if(FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).chineseName==curpara)
+					 {
+						 
+						 min=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).min_number;
+						 max=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).max_number;
+						 break;
+					 }
+				 }
+				 var labelArr:Array=new Array;
+				 labelArr.push(min);
+				 labelArr.push(min+(max-min)/5);
+				 labelArr.push(min+(max-min)*2/5);
+				 labelArr.push(min+(max-min)*3/5);
+				 labelArr.push(min+(max-min)*4/5);
+				 labelArr.push(max);
+				 hSlider.labels=labelArr;
+				 
+				 var tickValueArr:Array=new Array;
+				 tickValueArr.push(min);
+				 tickValueArr.push(min+(max-min)/5);
+				 tickValueArr.push(min+(max-min)*2/5);
+				 tickValueArr.push(min+(max-min)*3/5);
+				 tickValueArr.push(min+(max-min)*4/5);
+				 tickValueArr.push(max);
+				 hSlider.tickValues=tickValueArr;
+				 //hSlider.invalidateDisplayList();
+				 switch(curpara)
+				 {
+					 case "温度":iImage.source=icon_temp;
+						 curparaUnit="°C";
+						 hSlider.setStyle("trackSkin",components.TempTrackSkin);
+						 
+						 break;
+					 case "湿度":iImage.source=icon_hume;
+						 curparaUnit="%";
+						 hSlider.setStyle("trackSkin",components.HumTrackSkin);
+						 break;
+					 case "光照":iImage.source=icon_light;
+						 curparaUnit="lux";
+						 hSlider.setStyle("trackSkin",components.LightTrackSkin);
+						 break;
+					 case "粉尘":iImage.source=icon_dust;
+						 curparaUnit="ug/m³";
+						 hSlider.setStyle("trackSkin",components.DustTrackSkin);
+						 break; 
+					 case "二氧化碳":iImage.source=icon_CO2;
+						 curparaUnit="ppm";
+						 hSlider.setStyle("trackSkin",components.CO2TrackSkin);
+						 break;
+					 case "二氧化硫":iImage.source=icon_SO2;
+						 curparaUnit="ppm";
+						 hSlider.setStyle("trackSkin",components.SO2TrackSkin);
+						 break;
+					 case "一氧化碳":iImage.source=icon_CO;
+						 curparaUnit="ppm";
+						 hSlider.setStyle("trackSkin",components.COTrackSkin);
+						 break;
+					 case "甲醛":iImage.source=icon_jiaquan;
+						 curparaUnit="ppm";
+						 hSlider.setStyle("trackSkin",components.CH2OTrackSkin);
+						 break;
+					 default:curparaUnit="ppm";
+						 break;
+				 }
+				 this.currentState="nodefault";
+			 }
+				
+			}
+			
+			private function resetNow(event:TimerEvent):void {      
+			 
+				// 获取登录时间和日期   
+				var dateFormatter:DateFormatter = new DateFormatter;    
+				dateFormatter.formatString = "JJ:NN:SS";   
+				var time:String = new Date().toLocaleTimeString(); 
+			    var date:String = dateFormatter.format(new Date());   
+				curTime = date;     
+			} 
+			/*
+		   private function BlurFilterHandle():void {
+			    var filter:BitmapFilter = getBitmapFilter();
+				var myFilters:Array = new Array;
+				myFilters.push(filter);
+				var filter1:ColorMatrixFilter;
+				var filterArr:Array = [];
+				var matrix:Array = [];
+				matrix = matrix.concat([1, 0, 0, 0, -80]);        //red
+				matrix = matrix.concat([0, 1, 0, 0, -80]);        //green
+				matrix = matrix.concat([0, 0, 1, 0, -80]);        //blue
+				matrix = matrix.concat([0, 0, 0, 1, 0]);    //alpha
+				filter1 = new ColorMatrixFilter(matrix);
+				myFilters.push(filter1);
+				ctlImage.filters=myFilters;
+		   } 
+			private function getBitmapFilter():BitmapFilter {
+				var blurX:Number = 1;
+				var blurY:Number = 1;
+				return new BlurFilter(blurX, blurY, 1);
+			}*/
+			 
+			private	function onTouchBegin(eBegin:TouchEvent):void {
+				eBeginX=eBegin.stageX;
+				eBeginY=eBegin.stageY;
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+				column.showDataTips=true;
+			}
+			private	function onTouchMove(eMove:TouchEvent):void {
+			   	 if(eMove.stageY-eBeginY>50)
+				 {
+					//pop
+					 
+					vg.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchMove);
+					if(FlexGlobals.topLevelApplication.count>0)
+					{
+						FlexGlobals.topLevelApplication.count--;
+						column.clearSelection();
+						column.showDataTips=false;
+					    slideTrans.direction="down";
+						 slideTrans.mode="push";
+						 slideTrans.duration=500;
+						navigator.pushView(views.paraView,null,null,slideTrans); 
+					}
+					else
+					{
+						lab_tip=new Label();
+						lab_tip.text="no more!";
+						lab_tip.width=this.width;
+						lab_tip.height=this.height;
+						lab_tip.x=0;
+						lab_tip.y=0;
+						lab_tip.verticalCenter=0;
+						lab_tip.horizontalCenter=0;
+						lab_tip.styleName="labStyle";
+						this.addElement(lab_tip);
+						setTimeout(function():void {
+							labtip_hide();
+						},800); 
+					}
+				}
+				else if( eBeginY-eMove.stageY>50 )
+				{
+					//push
+					
+					vg.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchMove);
+					if(FlexGlobals.topLevelApplication.count<paraTotalCount-1)
+					{
+						FlexGlobals.topLevelApplication.count++;
+						column.clearSelection();
+						column.showDataTips=false;
+					    slideTrans.direction="up";
+						slideTrans.mode="push";
+						slideTrans.duration=500;
+						navigator.pushView(views.paraView,null,null,slideTrans);
+					}
+					else
+					{
+						 lab_tip=new Label();
+						lab_tip.text="no more!";
+						lab_tip.width=this.width;
+						lab_tip.height=this.height;
+						lab_tip.x=0; 
+						lab_tip.y=0; 
+						lab_tip.verticalCenter=0;
+						lab_tip.horizontalCenter=0;
+						lab_tip.styleName="labStyle";
+						this.addElement(lab_tip);
+						setTimeout(function():void {
+							labtip_hide();
+						},800); 
+					}
+				}
+			}
+			private function labtip_hide():void {
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+				vg.addEventListener(TouchEvent.TOUCH_MOVE, onTouchMove,false,0,true);
+			}
+			private function newData(event:Event):void
+			{
+				if(datap.newestSensing.length>0)
+				{
+					trace("当前传感器 新数据节点编号，新数据传感器"+curparaEN+datap.newestSensing.getItemAt(0).ivalue);
+					if(datap.newestSensing.getItemAt(0).ivalue==FlexGlobals.topLevelApplication.nodeID)
+					{
+						for(var i:int=0;i<datap.newestSensing.length;i++)
+						{
+							if(datap.newestSensing.getItemAt(i).ikey==curparaEN)
+							{
+								var nf:NumberFormatter = new NumberFormatter;
+								nf.precision = 2;
+								curdata=nf.format(datap.newestSensing.getItemAt(i).ivalue);
+							    var glow:Glow =new Glow(iImage);
+								glow.alphaFrom=0;
+								glow.alphaTo=1;
+								glow.blurXFrom=65;
+								glow.blurYFrom=65;
+								glow.strength=12;
+								glow.color=0xb2d235;
+								glow.duration=2500;
+								glow.play(null,true);
+								if(paraInfo.length>0)
+								{
+									paraInfo.removeItemAt(0);
+								}
+								var pInfo:ParaInfo=new ParaInfo;
+								pInfo.paraValue=curdata; 
+								var arr1:Array=curTime.toString().split(":");
+								pInfo.paraTime=arr1[0]+":"+arr1[1];
+								paraInfo.addItem(pInfo);
+							    paraInfo.refresh();
+							//	ls.dataProvider=paraInfo;
+								break;
+							}
+						}
+					}
+				}
+				
+			}
+		 private  function result1_handler(event:ResultEvent):void{
+				CursorManager.removeBusyCursor();  
+				weekInfo.removeAll();
+				for(var e:Object in event.result ){
+					var spInfo:StatisticParaInfo=new StatisticParaInfo;
+					var arr:Array=event.result[e].toString().split(",");
+					spInfo.paraMaxValue=arr[0];
+					spInfo.paraMinValue=arr[1];
+					spInfo.paraAvgValue=arr[2];
+					var arr1:Array=arr[3].toString().split("-");
+					var strTime:String=arr1[1]+"."+arr1[2];
+					spInfo.paraTime=strTime;
+ 					weekInfo.addItem(spInfo);
+				}
+				column.dataProvider=weekInfo;
+				 
+		     	ls.dataProvider=paraInfo;
+				datap=new DataPump;
+				datap.addEventListener("_newSensingData",newData,false,0,true);
+				datap.consumer.subscribe();
+			}
+			private  function result_handler(event:ResultEvent):void{
+			  	ro1.getWeekData(uinfo.userDataTable,curparaEN,FlexGlobals.topLevelApplication.curNode.node_ID);//获得当天数据之后，请求历史数据
+				
+			    paraInfo.removeAll();
+				for(var e:Object in event.result ){
+ 					var pInfo:ParaInfo=new ParaInfo;
+					pInfo.paraValue=event.result[e].value;
+					var arr:Array=event.result[e].timestamparrive_tm.toString().split(" ");
+					var arr1:Array=arr[1].toString().split(":");
+					var strTime:String=arr1[0]+":"+arr1[1];
+					pInfo.paraTime=strTime;
+					paraInfo.addItem(pInfo);
+				}
+		        if(paraInfo.length>0)
+				{
+					curdata=paraInfo.getItemAt(paraInfo.length-1).paraValue;
+			    }
+			//	hSlider.thumbCount=1;
+			//	hSlider.validateNow();
+			// 	hSlider.getThumbAt(0).setStyle("thumbSkin",icon_slider);
+			 	hSlider.getThumbAt(0).enabled=false;
+				hSlider.value=Number(curdata);
+				switch(curpara)
+				{
+					case "温度": 
+					    adviceTip+="黄色表示范围为30-40°C"+"\n"+"小贴士:"+"\n"+"1.室内温度过高时，会影响人的体温调节功能，散热不良会引起血管舒张、脉搏加快、心率加速"+"\n"+"2.室内温度过低，则会使人体代谢功能下降，脉搏、呼吸减慢，皮下血管收缩，皮肤过度紧张，呼吸道粘膜的抵抗力减弱，容易诱发呼吸道疾病";
+						break;
+					case "湿度":  
+						adviceTip+="黄色表示范围为40%-60%RH(相对湿度)"+"\n"+"小贴士:"+"\n"+"1.图书、文物保管最佳湿度:40%-60%RH"+"\n"+"2.棉毛织品存放最佳湿度:40%-60%RH"+"\n"+"3.糖果、点心存放最佳湿度:50%~60%RH"+"\n"+"4.蔬菜、水果存放最佳湿度:50%~70%RH";
+						break;
+					case "二氧化碳":  
+						adviceTip+="黄色表示范围为500～1000ppm"+"\n"+"小贴士:"+"\n"+"二氧化碳浓度含量会影响人类的生活作息，二氧化碳浓度含量与人体生理反应如下:"+"\n"+"1.350～1000ppm:空气清新,呼吸顺畅"+"\n"+"2.1000～2000ppm:感觉空气浑浊，并开始觉得昏昏欲睡"+"\n"+"3.2000～5000ppm:感觉头痛、嗜睡、注意力无法集中";
+						break;
+					case "粉尘":   
+					    adviceTip+="黄色表示范围为40～50ug/m³"+"\n"+"小贴士:"+"\n"+"1.居室布置力求简单洁净,尽量不要挂绒布装饰品"+"\n"+"2.居室内多摆放植物盆景"+"\n"+"3.衣物、床单要等经常地洗、晒、烫、拍";
+						break; 
+					case "二氧化硫": 
+						adviceTip+="黄色表示范围为0.05725-0.191ppm"+"\n"+"小贴士:"+"\n"+"1.注意居室的通风换气"+"\n"+"2.居室内多摆放植物盆景"+"\n"+"3.尽量不在室内抽烟";
+						break;
+					case "光照": 
+					 adviceTip+="黄色表示范围为600-1000lux"+"\n"+"小贴士:"+"\n"+"1.非连续性工作空间，如门厅、储藏室:低档100lux,中档150lux,高档200lux"+"\n"+"2.有简单视觉要求的空间，如会议室、培训室、维修间:低档200lux,中档300lux,高档500lux"+"\n"+"3.有中等视觉要求的空间，如办公室、监控室、精密设备维修间:低档300lux,中档500lux,高档750lux";
+						break;
+					case "一氧化碳":  
+						adviceTip+="黄色表示范围为5.556-5.6ppm"+"\n"+"小贴士:"+"\n"+"1.室内吸烟是一氧化碳污染的主要来源"+"\n"+"2.木炭、液化气或固体酒精等不完全燃烧，也会排放大量的一氧化碳"+"\n"+"3.临近交通繁忙的道路两侧的居民室内,室外一氧化碳进人室内而产生污染";
+						break;
+					case "甲醛":  
+						adviceTip+="黄色表示范围为30-40°C"+"\n"+"小贴士:"+"\n"+"1.长期、低浓度接触甲醛会引起头痛、头晕、乏力、感觉障碍、免疫力降低，并可出现瞌睡、记忆力减退或神经衰弱、精神抑郁"+"\n"+"2.保持室内空气流通,在室内摆放盆栽、安装晶体石膏灯能有效降低甲醛含量";
+						break;
+					default: 
+						break;
+				}
+				hSlider.invalidateDisplayList();
+		 	}
+			private  function  faultHandle(event:FaultEvent):void
+			{ 
+				trace(" request error");
+				trace(event.fault.faultString);
+				trace(event.fault.faultDetail);
+			}
+			private function show_Warn():void
+			{
+				column.showDataTips=false;
+			 
+				vg.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchMove);
+				qImage.enabled=false;
+				aImage.enabled=false;
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+			    Multitouch.inputMode = MultitouchInputMode.GESTURE;
+				vg.addEventListener(TransformGestureEvent.GESTURE_SWIPE, onSwipe,false,0,true);
+				wc.addEventListener("_CLOSE1",CLOSE_Warn,false,0,true);
+				
+				 if(temp>=900)
+				 {
+					 this.width=this.width+this.width*0.3;
+					 vg.width=this.width/1.3;
+					 wc.width=this.width*0.3/1.3;
+					 this.x=this.x-temp*0.3;
+					 vg.x=vg.x-temp*0.3;
+					 wc.x=vg.x+vg.width;
+				 }
+				 else if(temp>=700&&temp<900)
+				 {
+					 this.width=this.width+this.width*0.5;
+					 vg.width=this.width/1.5;
+					 wc.width=this.width*0.5/1.5;
+					 this.x=this.x-temp*0.5;
+					 vg.x=vg.x-temp*0.5;
+					 wc.x=vg.x+vg.width;
+				 }
+				 else
+				 {
+					 this.width=this.width+this.width*0.8;
+					 vg.width=this.width/1.8;
+					 wc.width=this.width*0.8/1.8;
+					 this.x=this.x-temp*0.8;
+					 vg.x=vg.x-temp*0.8;
+					 wc.x=vg.x+vg.width;
+				 }
+					 
+				
+				wc.includeInLayout=true;
+				wc.visible=true;
+				 
+			}
+			private function CLOSE_Warn(evt:Event):void
+			{
+				 
+				qImage.enabled=true;
+				aImage.enabled=true;
+				this.width=temp;
+				vg.width=this.width*0.95;
+				if(temp>=900)
+				{
+					this.x=this.x+temp*0.3;
+					vg.x=vg.x+temp*0.3;
+				}
+				else if(temp>=700&&temp<900)
+				{
+					this.x=this.x+temp*0.5;
+					vg.x=vg.x+temp*0.5;
+				}
+				else
+				{
+					this.x=this.x+temp*0.8;
+					vg.x=vg.x+temp*0.8;
+				}
+				
+				wc.removeEventListener("_CLOSE1",CLOSE_Warn);
+			    wc.includeInLayout=false;
+				wc.visible=false;
+				vg.removeEventListener(TransformGestureEvent.GESTURE_SWIPE, onSwipe);
+				Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+				vg.addEventListener(TouchEvent.TOUCH_MOVE,onTouchMove,false,0,true);
+				 
+			 
+			}
+			private function show_List():void
+			{
+				column.showDataTips=false;
+				 
+			//	column.enabled=false;
+				lc.list.dataProvider=FlexGlobals.topLevelApplication.nodes;
+				vg.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchMove);
+				qImage.enabled=false;
+				aImage.enabled=false;
+				if(lab_tip)
+				{
+					this.removeElement(lab_tip);
+					lab_tip=null;
+				}
+                Multitouch.inputMode = MultitouchInputMode.GESTURE;
+				vg.addEventListener(TransformGestureEvent.GESTURE_SWIPE, onSwipe,false,0,true); 
+				lc.addEventListener("_CLOSE",CLOSE_List,false,0,true);
+				if(temp>=900)
+				{
+					this.width=this.width+this.width*0.3;
+					vg.width=this.width/1.3;
+					lc.width=this.width*0.3/1.3;
+					this.x=this.x-temp*0.3;
+					vg.x=vg.x-temp*0.3;
+					lc.x=vg.x+vg.width;
+				}
+				else if(temp>=700&&temp<900)
+				{
+					this.width=this.width+this.width*0.5;
+					vg.width=this.width/1.5;
+					lc.width=this.width*0.5/1.5;
+					this.x=this.x-temp*0.5;
+					vg.x=vg.x-temp*0.5;
+					lc.x=vg.x+vg.width;
+				}
+				else
+				{
+					this.width=this.width+this.width*0.8;
+					vg.width=this.width/1.8;
+					lc.width=this.width*0.8/1.8;
+					this.x=this.x-temp*0.8;
+					vg.x=vg.x-temp*0.8;
+					lc.x=vg.x+vg.width;
+				}
+				lc.includeInLayout=true;
+				lc.visible=true;
+				qImage.alpha=1;
+			}
+			private function CLOSE_List(evt:Event):void
+			{
+				 
+			    lc.removeEventListener("_CLOSE",CLOSE_List);
+			    if(FlexGlobals.topLevelApplication.nodeID!=FlexGlobals.topLevelApplication.preNodeID)
+				{
+					FlexGlobals.topLevelApplication.preNodeID=FlexGlobals.topLevelApplication.nodeID;
+					FlexGlobals.topLevelApplication.count=0;
+					navigator.pushView(views.paraView);
+				}
+				else
+				{
+					qImage.enabled=true;
+					aImage.enabled=true;
+					lc.includeInLayout=false;
+					lc.visible=false;
+					vg.removeEventListener(TransformGestureEvent.GESTURE_SWIPE, onSwipe);
+					Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+					vg.addEventListener(TouchEvent.TOUCH_MOVE,onTouchMove,false,0,true);
+					this.width=temp;
+					vg.width=this.width*0.95;
+					if(temp>=900)
+					{
+						this.x=this.x+temp*0.3;
+						vg.x=vg.x+temp*0.3;
+					}
+					else if(temp>=700&&temp<900)
+					{
+						this.x=this.x+temp*0.5;
+						vg.x=vg.x+temp*0.5;
+					}
+					else
+					{
+						this.x=this.x+temp*0.8;
+						vg.x=vg.x+temp*0.8;
+					}
+				}
+			 
+				
+			}
+			private function onSwipe(event:TransformGestureEvent):void { 
+				 
+			        if(event.offsetX == -1) { 
+				
+				} else if(event.offsetX == 1) { 
+					//doSwipeRight(); 
+					qImage.enabled=true;
+					aImage.enabled=true;
+					
+					this.width=temp;
+					vg.width=this.width*0.95;
+					if(temp>=1000)
+					{
+						this.x=this.x+temp*0.3;
+						vg.x=vg.x+temp*0.3;
+					}
+					else if(temp>=750&&temp<1000)
+					{
+						this.x=this.x+temp*0.5;
+						vg.x=vg.x+temp*0.5;
+					}
+					else
+					{
+						this.x=this.x+temp*0.8;
+						vg.x=vg.x+temp*0.8;
+					}
+					lc.removeEventListener("_CLOSE",CLOSE_List);
+					lc.includeInLayout=false;
+					lc.visible=false;
+					wc.removeEventListener("_CLOSE1",CLOSE_Warn);
+					wc.includeInLayout=false;
+					wc.visible=false;
+					Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+					vg.addEventListener(TouchEvent.TOUCH_MOVE,onTouchMove,false,0,true);
+					 
+					 
+			     } 
+				if(event.offsetX == -1) { 
+					
+				} else if(event.offsetX == 1) { 
+				} 
+			}
+			 
+	]]>
+	</fx:Script>
+</s:View>
+

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:s="library://ns.adobe.com/flex/spark" removedFromStage="remove_Handle()"   backgroundColor="#2585a6" backgroundAlpha="0"   >
+	<fx:Declarations>
+		<mx:SolidColorStroke id="s5" color="green" weight="1"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			
+			//itemRenderer="components.ListRender"
+			
+			import mx.core.FlexGlobals;
+			
+		 
+			 
+			private function labelShow_Handle(item:Object):String{
+			 
+				return item.node_ID+"("+item.sensingTypes+")";
+				
+			}
+			private function listChange():void
+			{	
+				 
+				FlexGlobals.topLevelApplication.curNode=list.selectedItem;
+				
+				FlexGlobals.topLevelApplication.nodeID=list.selectedItem.node_ID;
+			
+				dispatchEvent(new Event("_CLOSE"));
+				
+				
+			} 
+			private function remove_Handle():void
+			{
+			//	list.itemRenderer=null;
+				 
+				list.removeChildren();
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	 
+	
+	<s:List change="listChange()"    horizontalScrollPolicy="off"  verticalScrollPolicy="on" fontSize="21"     contentBackgroundAlpha="0" color="white" textAlign="right" verticalCenter="0"    id="list"  labelFunction="labelShow_Handle" height="100%"   width="100%">
+		<s:itemRenderer>
+			<fx:Component>
+				<s:DataRenderer>
+					<s:Rect left="0" right="0" top="0" bottom="0">
+						<s:fill>
+							<s:SolidColor color="haloBlue"
+										  alpha="0"   />
+						</s:fill>
+					</s:Rect>
+					<s:Line bottom="0"  left="0" right="0" stroke="{outerDocument.s5}"/>
+					<s:Label fontSize="21" id="labelDisplay" text="{data.node_ID}({data.sensingTypes})"  verticalAlign="middle"
+					left="2" right="2" top="4" bottom="2" />
+				</s:DataRenderer>
+				
+			</fx:Component>
+			
+		</s:itemRenderer>
+		</s:List>
+</s:BorderContainer>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="init()"    backgroundColor="#2585a6" backgroundAlpha="0">
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			import mx.messaging.ChannelSet;
+			import mx.messaging.channels.AMFChannel;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.transitions.SlideViewTransition;
+			
+			import model.SysUser;
+			import model.SysUserHelper;
+			import model.UrlInfo;
+			import model.WParam;
+			private	var slideTrans:SlideViewTransition=new SlideViewTransition;
+			private  var userHelp:SysUserHelper  = new SysUserHelper;
+			private  var uinfo:SysUser = userHelp.getUserInfo();
+			
+			
+			
+			private var myAMF:AMFChannel= new AMFChannel;
+			private var channelSet:ChannelSet=new ChannelSet;
+			
+			private var ro1:RemoteObject = new RemoteObject;
+			
+			[Bindable]
+			private var tmessage:String="";
+			[Bindable]
+			private var minmini:Number=-10;
+			[Bindable]
+			private var minmaxi:Number=50;
+			[Bindable]
+			private var maxmini:Number=-10;
+			[Bindable]
+			private var maxmaxi:Number=50;
+			[Bindable]
+			private	 var curpara:String="";
+			private	var curparaEN:String="";
+			import model.UrlInfo;
+			import model.WParam;
+			private function init():void
+			{ 
+				if(FlexGlobals.topLevelApplication.curNode)
+				{
+					var strST:Array=FlexGlobals.topLevelApplication.curNode.sensingTypes.split(",");
+					curpara=strST[FlexGlobals.topLevelApplication.count%strST.length];
+					var strEN:Array=FlexGlobals.topLevelApplication.curNode.englishNames.split(",");
+					curparaEN=strEN[FlexGlobals.topLevelApplication.count%strEN.length];
+					for(var i:int=0;i<FlexGlobals.topLevelApplication.rangeCollect.length;i++)
+					{
+						if(FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).chineseName==curpara)
+						{
+							
+							minmini=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).min_number;
+							minmaxi=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).max_number;
+							maxmini=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).min_number;
+							maxmaxi=FlexGlobals.topLevelApplication.rangeCollect.getItemAt(i).max_number;
+							//	trace("量程"+minmini+","+minmaxi);
+						}
+					}
+					for(var j:int=0;j<FlexGlobals.topLevelApplication.wpCollect.length;j++)
+					{
+						if(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).node_id==FlexGlobals.topLevelApplication.nodeID&&FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).warningType==curpara)
+						{
+							trace("预警"+FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).node_id+","+FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).warningType);
+							hSlider1.value=Number(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).min_num);
+							hSlider2.value=Number(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).max_num);
+							if(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).email)
+							{
+								mailCheck.selected=true;
+							}
+							else
+							{
+								mailCheck.selected=false;
+							}
+							if(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).sinaWeibo)
+							{
+								weiboCheck.selected=true;
+							}
+							else
+							{
+								weiboCheck.selected=false;
+							}
+							break;
+						}
+					}
+				}
+				
+				
+			}
+			private function cancel_Handle(evt:MouseEvent):void
+			{  
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+				evt.preventDefault();
+				dispatchEvent(new Event("_CLOSE1"));
+			}
+			private function save_Handle(evt:MouseEvent):void{
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+				evt.preventDefault();
+				if(hSlider1.value>=hSlider2.value)
+				{
+					tmessage="下限须小于上限";
+					
+					return;
+				}
+				tmessage="";
+				myAMF.url=UrlInfo.URL;
+				channelSet.addChannel(myAMF);
+				ro1.channelSet = channelSet;
+				ro1.destination="modifyWarning";
+				ro1.addEventListener(ResultEvent.RESULT,result1_handler,false,0,true);
+				ro1.addEventListener(FaultEvent.FAULT,faultHandle,false,0,true);
+				for(var j:int=0;j<FlexGlobals.topLevelApplication.wpCollect.length;j++)
+				{
+					if(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).node_id==FlexGlobals.topLevelApplication.nodeID&&FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).warningType==curpara)
+					{
+						trace("修改预警");
+						trace(hSlider1.value+","+hSlider2.value);
+						FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).max_num=String(hSlider2.value);
+						FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).min_num=String(hSlider1.value);
+						if(mailCheck.selected)
+						{
+							FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).email=uinfo.email;
+						}
+						else
+						{
+							FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).email="";
+							
+						}
+						if(weiboCheck.selected)
+						{
+							FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).sinaWeibo=uinfo.sina_weibo;
+						}
+						else
+						{
+							FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).sinaWeibo="";
+						}
+						FlexGlobals.topLevelApplication.wpCollect.getItemAt(j).is_warning="1";
+						ro1.updateWarn(FlexGlobals.topLevelApplication.wpCollect.getItemAt(j));
+						FlexGlobals.topLevelApplication.wpCollect.refresh();
+						break;
+					}
+					
+				}
+				if(j==FlexGlobals.topLevelApplication.wpCollect.length)
+				{
+					var wp:WParam=new WParam;
+					
+					wp.node_id=FlexGlobals.topLevelApplication.nodeID;
+					wp.user_id=uinfo.userId;
+					wp.max_num=String(hSlider2.value);
+					wp.min_num=String(hSlider1.value);
+					
+					wp.is_warning="0";
+					if(mailCheck.selected)
+					{
+						wp.email=uinfo.email;
+						wp.is_warning="1";
+					}
+					else
+					{
+						wp.email="";
+					}
+					if(weiboCheck.selected)
+					{
+						wp.sinaWeibo=uinfo.sina_weibo;
+						wp.is_warning="1";
+					}
+					else
+					{
+						wp.sinaWeibo="";
+					}
+					wp.phone="";
+					wp.englishName=curparaEN;
+					wp.warningType=curpara;
+					FlexGlobals.topLevelApplication.wpCollect.addItem(wp);
+					ro1.updateWarn(wp);
+				}
+				dispatchEvent(new Event("_CLOSE1"));
+			 
+				
+			}
+			private  function result1_handler(event:ResultEvent):void{
+				
+			}
+			
+			private  function  faultHandle(event:FaultEvent):void
+			{ 
+				trace(" request error");
+				trace(event.fault.faultString);
+				trace(event.fault.faultDetail);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:states>
+		<s:State name="default"/>
+		<s:State name="nodefault"/>
+	</s:states>
+	<s:VGroup horizontalAlign="center" verticalAlign="middle"  width="100%" height="100%">
+		
+		
+		<s:BorderContainer  verticalCenter="0"   width="95%" height="10%" horizontalCenter="0"  borderAlpha="0.1" backgroundAlpha="0.1"  cornerRadius="3">
+			<s:Label text="{FlexGlobals.topLevelApplication.nodeID}号节点{curpara}预警设置   {tmessage}" color="white" textAlign="center"  fontSize="25" width="100%" height="100%" verticalAlign="middle"/>
+		</s:BorderContainer>
+		<s:BorderContainer  verticalCenter="0"   width="95%" height="80%" horizontalCenter="0"  borderAlpha="0.1" backgroundAlpha="0.1"  cornerRadius="3">
+			<s:VGroup horizontalAlign="center"  verticalAlign="middle"  width="100%" height="100%">
+				
+				<s:HGroup  width="100%" horizontalAlign="center" horizontalCenter="0" height="52%">
+					<s:VGroup   horizontalAlign="center" horizontalCenter="0" height="100%"  width="50%" >
+						<s:Label horizontalCenter="0" fontSize="20"  color="white" text="下限" width="50%" height="20%"   textAlign="center"  verticalAlign="middle"  />
+						<s:HSlider   rotation="-90"  width="50%"    horizontalCenter="0" includeIn="default" itemCreationPolicy="immediate"   id="hSlider1"  height="100%" minimum="{minmini}" maximum="{minmaxi}" value="20"  
+										snapInterval="0.5"  liveDragging="true" verticalCenter="0"  />
+					</s:VGroup>
+					<s:VGroup   horizontalAlign="center" horizontalCenter="0" paddingTop="2" height="100%"  width="50%" >
+						<s:Label fontSize="20" color="white" text="上限" width="50%" height="20%"   textAlign="center"  verticalAlign="middle"  />
+						<s:HSlider    rotation="-90"    width="50%"      includeIn="default"  itemCreationPolicy="immediate"    id="hSlider2"  height="100%" minimum="{maxmini}" maximum="{maxmaxi}" value="20"  
+									  snapInterval="0.5" liveDragging="true" verticalCenter="0" />
+						
+					</s:VGroup>	
+				</s:HGroup>
+				
+				<s:HGroup      width="100%" horizontalAlign="center" horizontalCenter="0" height="30%"    >
+					<s:Spacer width="8%"/>
+					<s:CheckBox includeIn="default" itemCreationPolicy="immediate"    horizontalCenter="0"         id="weiboCheck" color="white" label="微博提醒"  fontSize="20" height="100%" width="50%" selected="false"  >
+					</s:CheckBox>
+					
+					<s:CheckBox includeIn="default" itemCreationPolicy="immediate"    horizontalCenter="0"    id="mailCheck" color="white" label="邮件提醒"  fontSize="20" height="100%" width="50%" selected="false"  >
+					</s:CheckBox>
+					
+				</s:HGroup>
+				
+				<s:HGroup horizontalAlign="center" height="18%" width="100%">
+					 
+					<mx:LinkButton  skin="components.LinkButtonAlphaSkin" label="保存" fontSize="25" color="white" height="100%" width="50%" id="okbt1" fontWeight="bold" 
+									click="save_Handle(event)"/>
+					<mx:LinkButton skin="components.LinkButtonAlphaSkin"  label="取消" fontSize="25" color="white" height="100%" width="50%" id="nobt1" fontWeight="bold" 
+								   click="cancel_Handle(event)"/>
+					
+					
+				</s:HGroup>
+			</s:VGroup>
+		</s:BorderContainer>
+	</s:VGroup>
+</s:BorderContainer>

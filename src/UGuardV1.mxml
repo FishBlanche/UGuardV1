@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009"    
+							xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/mx"  firstView="views.paraView"   creationComplete="creationComplete_Handle()" splashScreenImage="components.MyScreenImageSource"
+							splashScreenMinimumDisplayTime="2500"
+							splashScreenScaleMode="stretch" top="0"  bottom="0" width="100%"  height="100%"      >
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	 
+		 
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			
+			import spark.transitions.ZoomViewTransition;
+			
+			import model.newNodeInfo;
+			 
+			public	var rangeCollect:ArrayCollection  =new ArrayCollection;  //第一层树结点数据
+		
+			public	var wpCollect:ArrayCollection  =new ArrayCollection;  //第一层树结点数据
+			
+			[Bindable]
+			public var curNode:newNodeInfo;
+		 
+			public var preNodeID:String="";
+		 
+			
+			[Bindable]
+			public var nodeID:String="";
+			public	var count:int=0;
+	        [Bindable]
+			public		var nodes:ArrayCollection  = new ArrayCollection();  //第一层树结点数据
+	
+			public var myName:String;
+			public	var iweekDay:String; 
+			public	var idate:String;
+		//	public var fadeTrans:CrossFadeViewTransition = new CrossFadeViewTransition();
+			public var zoomTrans:ZoomViewTransition=new ZoomViewTransition();
+		//	private	var slideTrans:SlideViewTransition=new SlideViewTransition;
+			//public var flipTrans:FlipViewTransition = new FlipViewTransition();
+			 
+		
+			
+			private function creationComplete_Handle():void{
+				this.actionBar.visible=false;
+				this.actionBar.includeInLayout=false;
+			
+				navigator.defaultPopTransition = zoomTrans;
+				navigator.defaultPushTransition = zoomTrans;
+			//	navigator.cachePolicy="on";
+				zoomTrans.duration=200;
+			 
+				var    date:Date = new Date();
+				var weekDay:int = date.day;
+				switch(weekDay)
+				{
+					case 0:iweekDay="Sunday";
+						break;
+					case 1:iweekDay="Monday";
+						break;
+					case 2:iweekDay="Tuesday";
+						break;
+					case 3:iweekDay="Wednesday";
+						break;
+					case 4:iweekDay="Thursday";
+						break;
+					case 5:iweekDay="Friday";
+						break;
+					case 6:iweekDay="Saturday";
+						break;
+					
+				}
+				var dateFormatter:DateFormatter = new DateFormatter();    
+				dateFormatter.formatString = "YYYY/MM/DD";   
+				var time:String = new Date().toLocaleTimeString();   
+				idate = dateFormatter.format(new Date());   
+			}
+			private function userIdle(e:FlexEvent):void {
+				if(e.currentTarget.mx_internal::idleCounter >= 1200){
+					//进行登录超时处理!
+					//trace("用户不活动已有两分钟");
+				}
+			}
+		]]>
+	</fx:Script>
+ 
+	
+</s:ViewNavigatorApplication>
